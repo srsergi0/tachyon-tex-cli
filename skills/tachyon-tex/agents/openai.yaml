@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tachyon TeX"
+  short_description: "Compile LaTeX and run live browser previews"
+  default_prompt: "Use $tachyon-tex to compile this LaTeX project and explain any errors."

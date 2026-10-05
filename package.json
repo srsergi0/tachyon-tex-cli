@@ -1,0 +1,30 @@
+{
+  "name": "tachyon-tex-cli",
+  "version": "2.0.0",
+  "description": "Portable LaTeX compiler, live preview, and Agent Skill",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srsergi0/tachyon-tex-cli.git"
+  },
+  "bin": {
+    "tachyon-tex": "bin/tachyon-tex.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test:full": "node test/full-tex.mjs",
+    "check": "node scripts/check.mjs",
+    "package": "node scripts/package.mjs"
+  }
+}
