@@ -115,6 +115,6 @@ npm test
 cargo build --locked --release
 ```
 
-Linux static builds require `musl-tools`, the Rust musl target, and its Cargo linker set to `musl-gcc`. CI uses native runners for all six OS/CPU combinations, runs real PDF/background lifecycle tests, and publishes only when every platform passes. Set `TACHYON_BINARY` for target-specific Node tests. `TACHYON_EMBED_ENGINE_PATH` is a development override; official builds use the pinned upstream archive.
+Linux static builds require `musl-tools` for C dependencies and the Rust musl target. The Cargo configuration uses Rust's bundled linker/CRT to avoid mixing system musl versions. CI uses native runners for all six OS/CPU combinations, runs real PDF/background lifecycle tests, and publishes only when every platform passes. Set `TACHYON_BINARY` for target-specific Node tests. `TACHYON_EMBED_ENGINE_PATH` is a development override; official builds use the pinned upstream archive.
 
 The original [Fair Source 0.9 license](LICENSE), including its usage conditions, is preserved. Third-party components retain their licenses; see [notices](THIRD_PARTY_NOTICES.md).
