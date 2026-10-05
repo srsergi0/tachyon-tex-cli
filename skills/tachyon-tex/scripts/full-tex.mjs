@@ -1,6 +1,5 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { cacheRoot, request, verifiedDownload, readJSON, atomicJSON } from './installer.mjs';
 
@@ -20,7 +19,8 @@ async function findBins(root, depth = 0) {
 }
 export async function texEnvironment() {
   const state = await readJSON(path.join(cacheRoot(), 'full-tex.json'));
-  return state?.bins?.length ? {...process.env, PATH: [...state.bins, process.env.PATH || ''].join(path.delimiter)} : {...process.env};
+  const env = process.platform === 'win32' ? {...process.env, LC_ALL: 'C', LANG: 'C'} : {...process.env};
+  return state?.bins?.length ? {...env, PATH: [...state.bins, process.env.PATH || ''].join(path.delimiter)} : env;
 }
 export async function setupFull({allPackages = false} = {}) {
   const stateFile = path.join(cacheRoot(), 'full-tex.json');
@@ -35,7 +35,8 @@ export async function setupFull({allPackages = false} = {}) {
     const archive = path.join(cacheRoot(), 'downloads', name);
     console.error(`Installing full TeX support: ${name}. This may take several minutes.`);
     await verifiedDownload(asset.browser_download_url, archive, asset.digest.slice(7));
-    const staging = await fs.mkdtemp(path.join(os.tmpdir(), 'tachyon-tinytex-'));
+    const base = path.join(cacheRoot(), 'full-tex'); await fs.mkdir(base, {recursive: true});
+    const staging = await fs.mkdtemp(path.join(base, '.install-'));
     try {
       await run('tar', ['-xf', archive, '-C', staging]);
       const destination = path.join(cacheRoot(), 'full-tex', version);

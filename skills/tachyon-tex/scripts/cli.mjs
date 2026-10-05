@@ -125,12 +125,13 @@ async function main() {
     if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('--port must be an integer from 0 to 65535.');
     if (!Number.isFinite(interval) || interval < 100) throw new Error('--interval must be at least 100 milliseconds.');
     const input = args.shift(); if (!input) throw new Error(`${command} requires an input path.`);
-    await ensureBinary({offline: args.includes('--offline'), notifyOnly: args.includes('--no-auto-update')});
+    const binary = await ensureBinary({offline: args.includes('--offline'), notifyOnly: args.includes('--no-auto-update')});
     if (await requiresFull([input, ...args])) {
       const probe = await capture('latexmk', ['-version'], {env: await texEnvironment()}).catch(() => null);
       if (!probe || probe.code !== 0) { if (args.includes('--offline')) throw new Error('Full TeX is unavailable offline. Run setup --full first.'); await setupFull(); }
     }
     const config = await sessionConfig(input, args, {port, interval});
+    config.binary = binary;
     if (detached) { const session = await background(config); showSession(session, json); if (open) openBrowser(session.url); }
     else {
       const existing = (await sessions(input)).find(s => s.state !== 'stopped'); if (existing) throw new Error(`A session is already running at ${existing.url}. Use stop before starting another.`);

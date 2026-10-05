@@ -74,7 +74,12 @@ export async function ensureBinary({offline = false, update = false, notifyOnly 
   const expected = checksumFor(await (await request(`${base}/SHA256SUMS`)).text(), name);
   const binary = path.join(root, 'bin', tag, name);
   console.error(`Installing ${tag} for ${target} (SHA-256 verified)...`);
-  const sha256 = await verifiedDownload(`${base}/${name}`, binary, expected);
-  await atomicJSON(stateFile, {version: tag, platform: target, binary, sha256, checkedAt: Date.now()});
-  return binary;
+  try {
+    const sha256 = await verifiedDownload(`${base}/${name}`, binary, expected);
+    await atomicJSON(stateFile, {version: tag, platform: target, binary, sha256, checkedAt: Date.now()});
+    return binary;
+  } catch (error) {
+    if (valid && !update) { console.error(`Automatic update failed: ${error.message} Continuing with ${state.version}. Run update to retry.`); return state.binary; }
+    throw error;
+  }
 }

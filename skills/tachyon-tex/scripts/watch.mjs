@@ -90,6 +90,7 @@ export async function background(config) {
 const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Tachyon TeX live preview</title><style>body{margin:0;font:16px system-ui;background:#171b24;color:#eee}header{padding:14px 20px}pre{white-space:pre-wrap;background:#301f24;margin:0;padding:12px;max-height:25vh;overflow:auto}iframe{width:100%;height:calc(100vh - 65px);border:0}a{color:#acd6ff}</style><header><b>Tachyon TeX</b> · <span id="state">Connecting…</span> · <a href="/document.pdf" target="_blank">Open PDF</a></header><pre id="error" hidden></pre><iframe title="Compiled PDF"></iframe><script>let revision=-1;const events=new EventSource('/events');events.onmessage=e=>{const s=JSON.parse(e.data);document.querySelector('#state').textContent=s.state;const error=document.querySelector('#error');error.hidden=!s.error;error.textContent=s.error||'';if(s.revision>0&&s.revision!==revision){revision=s.revision;document.querySelector('iframe').src='/document.pdf?v='+revision;}};events.onerror=()=>document.querySelector('#state').textContent='Disconnected';</script></html>`;
 
 export async function watch(config) {
+  if (config.binary) process.env.TACHYON_BINARY = config.binary;
   let stopped = false, active = null, timer, revision = 0;
   const clients = new Set();
   const state = {...config, pid: process.pid, state: 'starting', revision, startedAt: new Date().toISOString(), error: null};
