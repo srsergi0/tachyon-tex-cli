@@ -67,7 +67,7 @@ jobs:
           tag='${{ github.ref_name }}'
           if [[ "$tag" != v* ]]; then tag="v$(node -p "require('./package.json').version")"; fi
           node scripts/package.mjs '${{ matrix.target }}' '${{ matrix.platform }}' "$tag"
-          tar -czf "dist/tachyon-tex-$tag-${{ matrix.platform }}.tar.gz" -C dist "tachyon-tex-$tag-${{ matrix.platform }}"
+          tar -czf "dist/tachyon-tex-$tag-${{ matrix.platform }}.tar.gz" -C dist/packages "tachyon-tex-$tag-${{ matrix.platform }}"
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: ${{ matrix.platform }}

@@ -22,5 +22,9 @@ try {
   await fs.writeFile(bib, '\\documentclass{article}\n\\usepackage[backend=biber]{biblatex}\n\\addbibresource{refs.bib}\n\\begin{document}\\cite{knuth}\\printbibliography\\end{document}\n');
   const result = await run([bib, '--json', '--keep-intermediates']); assert.equal(result.code, 0, result.stderr); assert.equal(JSON.parse(result.stdout).engine, 'latexmk');
   assert.match(await fs.readFile(path.join(root, 'bibliography.bbl'), 'utf8'), /Knuth/);
-  console.log('Full TeX verified: XeLaTeX, pdfLaTeX, LuaLaTeX, and biblatex/Biber.');
+  const extra = path.join(root, 'extra-package.tex');
+  await fs.writeFile(extra, '\\documentclass{article}\n\\usepackage{lipsum}\n\\begin{document}\\lipsum[1]\\end{document}\n');
+  const packageResult = await run([extra, '--engine', 'latexmk', '--json']); assert.equal(packageResult.code, 0, packageResult.stderr);
+  assert.ok(JSON.parse(packageResult.stdout).ok);
+  console.log('Full TeX verified: XeLaTeX, pdfLaTeX, LuaLaTeX, biblatex/Biber, and additional TeX packages.');
 } finally { await fs.rm(root, {recursive: true, force: true}); }

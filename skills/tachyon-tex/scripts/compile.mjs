@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { ensureBinary } from './installer.mjs';
-import { texEnvironment, setupFull } from './full-tex.mjs';
+import { texEnvironment, setupFull, installMissingPackage } from './full-tex.mjs';
 
 export function capture(command, args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -41,5 +41,11 @@ export async function compile(args, {onOutput, onChild, detached = false, autoSe
   }
   const cleanArgs = args.filter(arg => !['--no-auto-update', '--no-update-check'].includes(arg));
   // Node owns release updates; the child must not race its managed installer.
-  return capture(binary, [...cleanArgs, '--no-update-check'], {env: {...env, TACHYON_NO_UPDATE_CHECK: '1'}, onOutput, onChild, detached});
+  let result;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    result = await capture(binary, [...cleanArgs, '--no-update-check'], {env: {...env, TACHYON_NO_UPDATE_CHECK: '1'}, onOutput, onChild, detached});
+    if (result.code === 0 || offline || attempt === 3 || !result.stderr.includes('using latexmk')) break;
+    if (!await installMissingPackage(result.stderr, {onOutput, onChild, detached})) break;
+  }
+  return result;
 }

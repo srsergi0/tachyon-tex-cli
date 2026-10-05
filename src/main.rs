@@ -92,7 +92,12 @@ fn main() -> ExitCode {
         );
         return ExitCode::SUCCESS;
     }
-    if !cli.no_update_check && std::env::var_os("TACHYON_NO_UPDATE_CHECK").is_none() {
+    let offline = match &cli.command {
+        Some(Commands::Compile(args)) => args.offline,
+        None => cli.compile.offline,
+        _ => false,
+    };
+    if !offline && !cli.no_update_check && std::env::var_os("TACHYON_NO_UPDATE_CHECK").is_none() {
         update::startup(!cli.no_auto_update);
     }
     let args = match cli.command {

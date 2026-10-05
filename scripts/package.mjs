@@ -12,7 +12,7 @@ const sha = createHash('sha256').update(await fs.readFile(path.join('dist', name
 await fs.writeFile(path.join('dist', `${platform}.sha256`), `${sha}  ${name}\n`);
 // Raw assets support dependency-free install/update. Companion archives preserve
 // the project and embedded-engine license notices when redistributed.
-const stage = path.join('dist', `tachyon-tex-${tag}-${platform}`);
+const stage = path.join('dist', 'packages', `tachyon-tex-${tag}-${platform}`);
 await fs.mkdir(stage, {recursive: true});
 await fs.copyFile(path.join('dist', name), path.join(stage, `tachyon-tex${suffix}`));
 for (const file of ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']) await fs.copyFile(file, path.join(stage, file));
