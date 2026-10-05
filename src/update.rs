@@ -69,9 +69,10 @@ pub fn startup(automatic: bool) {
                 env!("CARGO_PKG_VERSION")
             );
             if automatic {
+                let executable = std::env::current_exe()?;
                 match install(&release.tag_name) {
                     Ok(()) => {
-                        let status = Command::new(std::env::current_exe()?).args(std::env::args_os().skip(1)).env("TACHYON_UPDATED", "1").status()?;
+                        let status = Command::new(executable).args(std::env::args_os().skip(1)).env("TACHYON_UPDATED", "1").status()?;
                         std::process::exit(status.code().unwrap_or(1));
                     }
                     Err(error) => eprintln!("Automatic update failed: {error:#}. Continuing with the installed version. Run tachyon-tex update to retry."),

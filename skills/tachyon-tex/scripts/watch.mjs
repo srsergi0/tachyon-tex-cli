@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
@@ -65,6 +66,7 @@ export function openBrowser(url) {
   child.on('error', error => console.error(`Could not open browser: ${error.message}. Open ${url} manually.`)); child.unref();
 }
 export async function background(config) {
+  config.background = true;
   const file = path.join(config.dir, 'config.json');
   const lock = path.join(config.dir, 'start.lock');
   let handle;
@@ -91,6 +93,7 @@ const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="v
 
 export async function watch(config) {
   if (config.binary) process.env.TACHYON_BINARY = config.binary;
+  function emit(text) { process.stdout.write(text); if (!config.background) appendFileSync(path.join(config.dir, 'watch.log'), text); }
   let stopped = false, active = null, timer, revision = 0;
   const clients = new Set();
   const state = {...config, pid: process.pid, state: 'starting', revision, startedAt: new Date().toISOString(), error: null};
@@ -132,14 +135,14 @@ export async function watch(config) {
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(config.port, '127.0.0.1', resolve); });
   state.url = `http://127.0.0.1:${server.address().port}`;
-  await publish(); console.log(`Live preview: ${state.url}`);
+  await publish(); emit(`Live preview: ${state.url}\n`);
   process.once('SIGINT', shutdown); process.once('SIGTERM', shutdown);
   let previous = await snapshot(config.root, [config.output, config.dir]);
   async function build() {
     state.state = 'compiling'; state.error = null; await publish();
-    console.log(`[${new Date().toISOString()}] Compiling ${config.input}`);
+    emit(`[${new Date().toISOString()}] Compiling ${config.input}\n`);
     try {
-      const result = await compile([...config.args, '--json'], {autoSetup: false, detached: process.platform !== 'win32', onChild: child => { active = child; }, onOutput: text => process.stdout.write(text)});
+      const result = await compile([...config.args, '--json'], {autoSetup: false, detached: process.platform !== 'win32', onChild: child => { active = child; }, onOutput: emit});
       if (stopped) return;
       active = null; state.lastBuildAt = new Date().toISOString(); state.exitCode = result.code;
       state.state = result.code === 0 ? 'ready' : 'error'; state.error = result.code === 0 ? null : result.stderr.slice(-16000);

@@ -61,6 +61,15 @@ fn needs_full_tex(main: &Path) -> bool {
 
 pub fn infer_tex_engine(main: &Path) -> TexEngine {
     let text = fs::read_to_string(main).unwrap_or_default();
+    let header = text.lines().take(5).collect::<Vec<_>>().join("\n");
+    let magic = regex::Regex::new(r"(?im)%\s*!\s*tex\s+program\s*=\s*(lualatex|pdflatex)").unwrap();
+    if let Some(found) = magic.captures(&header) {
+        return if found[1].eq_ignore_ascii_case("lualatex") {
+            TexEngine::Lualatex
+        } else {
+            TexEngine::Pdflatex
+        };
+    }
     if text.contains("\\directlua")
         || text.contains("\\usepackage{luacode}")
         || text

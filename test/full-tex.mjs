@@ -12,9 +12,12 @@ try {
   for (const engine of ['xelatex', 'pdflatex', 'lualatex']) {
     const file = path.join(root, `${engine}.tex`);
     const lua = engine === 'lualatex' ? '\\directlua{tex.print("Lua engine verified.")}' : '';
-    await fs.writeFile(file, `\\documentclass{article}\n\\begin{document}Full ${engine}. ${lua}\\end{document}\n`);
-    const result = await run([file, '--engine', 'latexmk', '--tex-engine', engine, '--json', '--keep-logs']);
+    const header = engine === 'pdflatex' ? '% !TeX program=pdflatex\n' : '';
+    await fs.writeFile(file, `${header}\\documentclass{article}\n\\begin{document}Full ${engine}. ${lua}\\end{document}\n`);
+    const selected = engine === 'pdflatex' ? [] : ['--engine', 'latexmk', '--tex-engine', engine];
+    const result = await run([file, ...selected, '--json', '--keep-logs']);
     assert.equal(result.code, 0, result.stderr); assert.equal(JSON.parse(result.stdout).engine, 'latexmk');
+    if (engine === 'pdflatex') assert.match(result.stderr, /pdfTeX/);
     assert.ok((await fs.readFile(file.replace(/\.tex$/, '.pdf'))).subarray(0, 5).equals(Buffer.from('%PDF-')));
   }
   const bib = path.join(root, 'bibliography.tex');

@@ -40,7 +40,7 @@ npx --yes github:srsergi0/tachyon-tex-cli stop ./project
 
 The HTTP preview binds to `127.0.0.1`, selects a free port, and refreshes the PDF after a successful build. Errors appear in the browser/log and retain the previous PDF. Use `--port 8080` or `--interval 1000` to configure it. Watch accepts files/directories; extract ZIP projects first.
 
-Canonical input path plus main-file choice identifies a session. Repeating a background request returns the existing session. With multiple sessions, give logs/stop an input path; `stop --all` stops all. Status/logs require no network; stopped sessions retain their log. Foreground diagnostics print in the terminal.
+Canonical input path plus main-file choice identifies a session. Repeating a background request returns the existing session. With multiple sessions, give logs/stop an input path; `stop --all` stops all. Status/logs require no network; stopped sessions retain their log. Foreground diagnostics print in the terminal and are also saved.
 
 ## Engines and compatibility
 
